@@ -1,0 +1,9 @@
+# vim: ft=yaml
+# Defaults for backuppc
+
+backuppc:
+  server:
+    enabled: true
+  client:
+    enabled: true
+
