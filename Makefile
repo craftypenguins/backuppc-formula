@@ -23,7 +23,12 @@ clean-test:
 		lxc stop saltsolo
 		lxc delete saltsolo
 
-test-lxc:	check-lxc-prereq test-lxc-launch test-lxc-wait
+test-lxc:
+test-lxc:	check-lxc-prereq 
+ifeq ($(shell lxc info saltsudo 1>&2 2>/dev/null; echo $$?), 1 )
+test-lxc: test-lxc-launch
+endif	
+test-lxc: test-lxc-wait
 
 test-lxc-launch:
 	@echo "Starting LXC test environment"
