@@ -42,22 +42,20 @@ test-lxc-setup: check-lxc-prereq
 	@echo "Adding current user key to root for SSH"
 	@lxc exec $(test_container_name) -- bash -c "while [ ! -d /root/.ssh ]; do sleep 1; done"  #Added this because there have been race issues where IP exists, but /root/
 	@lxc file push ~/.ssh/id_rsa.pub $(test_container_name)/root/.ssh/authorized_keys --mode=0600 --uid=0
-	@echo "Setting up salt minion in container"
-	@lxc exec $(test_container_name) -- bash -c "wget -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -"
+	@echo "Setting up Salt Repository"
+	@lxc exec $(test_container_name) -- bash -c "wget -q -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -"
 	@lxc exec $(test_container_name) -- bash -c "echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main' > /etc/apt/sources.list.d/saltstack.list"
-	@lxc exec $(test_container_name) -- bash -c "apt-get -q update && apt-get install -q -y salt-minion"
+	@echo "Updating APT repository and installing Minion"
+	@lxc exec $(test_container_name) -- bash -c "apt-get -qq update && apt-get -qq install -y salt-minion > /dev/null"
+	@echo "Mounting test fixtures"
 	@lxc config device add $(test_container_name) salt disk source=$(ROOT_DIR)/test/salt path=/etc/salt
 	@lxc config device add $(test_container_name) test disk source=$(ROOT_DIR)/test path=/test
-
-flarn:
-	lxc config device add $(test_container_name) salt disk source=$(ROOT_DIR)/test/salt path=/etc/salt
-	lxc config device add $(test_container_name) salt disk source=$(ROOT_DIR)/test path=/test
 
 test-lxc-run: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run: test-lxc-run-ssh
 
 test-lxc-run-ssh:
-	@ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'uptime'
+	@ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'uptime'
 
 test: test-lxc-setup test-lxc-run
 	@echo "Tests done"
