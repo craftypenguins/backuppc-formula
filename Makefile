@@ -8,6 +8,7 @@ test_container_name=saltsolo
 LXC_IMAGE_INFO:=$(shell lxc image list | grep $(lxc_image_name))
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 INTEGRATION_TESTSUITE=default
+#Used to generate newline in builtin error output
 define n
 
 
@@ -19,7 +20,7 @@ EXECUTABLES = jq lxc lxd
 K := $(foreach exec,$(EXECUTABLES),\
 	        $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH")))
 
-.PHONY: all dist-clean clean clean-test image test-lxc-setup
+.PHONY: all dist-clean clean clean-test image test-lxc-setup venv test
 all: build test package
 
 dist-clean:	clean
@@ -30,7 +31,17 @@ clean:	clean-test
 clean-test:
 	@lxc list $(test_container_name) | grep -q $(test_container_name) && lxc delete -f $(test_container_name) || true
 	@[ -f $(ROOT_DIR)/ssh_config ] && rm $(ROOT_DIR)/ssh_config || true
+	@[ -d $(ROOT_DIR)/.virtualenv ] && rm -rf $(ROOT_DIR)/.virtualenv || true
 
+# Virtualenv Builder
+venv: .virtualenv/bin/activate
+.virtualenv/bin/activate:
+	test -d .virtualenv || python3 -m venv .virtualenv
+	.virtualenv/bin/pip install -U pip setuptools
+	.virtualenv/bin/pip install -Ur test_requirements.txt
+	touch .virtualenv/bin/activate
+
+# LXC Image Builder
 image: 
 ifeq ($(shell lxc info preseed 1>/dev/null 2>&1 && echo exists), exists)
 	$(error "A `preseed` container already exists$(n)Remove existing preseed container$(n)lxc delete preseed -f")
@@ -90,7 +101,7 @@ test-lxc-run: test-lxc-run-infrastructure
 
 test-lxc-run-testinfra: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-testinfra: $(ROOT_DIR)/ssh_config
-	@pytest -v test.py --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo
+	@.virtualenv/bin/pytest -v test.py --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo
 
 test-lxc-run-salt:
 	@ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'salt-call --local state.sls backuppc'
@@ -107,13 +118,8 @@ $(ROOT_DIR)/ssh_config:
 	@echo "  hostname $(container_ip)" >> $(ROOT_DIR)/ssh_config
 	@echo "  user root" >> $(ROOT_DIR)/ssh_config
 
-ifeq ($(LXC_IMAGE_INFO),)
-endif
-test: test-lxc-setup test-lxc-run $(ROOT_DIR)/ssh_config
+test: venv test-lxc-setup test-lxc-run $(ROOT_DIR)/ssh_config
 	@echo "Tests done"
-
-flarn:
-	@echo "Stuff = $(LXC_IMAGE_INFO)"
 
 build:
 	$(eval test_container_ip = $$(shell lxc list $(test_container_name) --format json | jq -r ".[] .state.network.eth0.addresses[0].address" ))
