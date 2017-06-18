@@ -5,4 +5,5 @@
 .cache/
 .ropeproject/
 __pycache__/
+ssh_config
 
