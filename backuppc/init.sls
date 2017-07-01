@@ -6,7 +6,6 @@
 {% if backuppc.server.enabled %}
 include:
   - backuppc.server.install
-  - backuppc.server.init
   - backuppc.server.config
   - backuppc.server.service
 {% else %}

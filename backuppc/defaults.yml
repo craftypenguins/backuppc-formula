@@ -2,6 +2,10 @@
 # Defaults for backuppc
 
 backuppc:
+  lookup:
+    version: 4.1.3
+    xs_version: 0.56
+    xs_repo: https://github.com/backuppc/backuppc-xs.git  
   server:
     enabled: true
   client:

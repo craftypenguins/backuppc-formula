@@ -25,17 +25,18 @@ all: build test package
 
 dist-clean:	clean
 	@lxc image list $(lxc_image_name) | grep -q $(lxc_image_name) && lxc image delete $(lxc_image_name) || true
+	@[ -d $(ROOT_DIR)/.virtualenv ] && rm -rf $(ROOT_DIR)/.virtualenv || true
 
 clean:	clean-test
 
 clean-test:
 	@lxc list $(test_container_name) | grep -q $(test_container_name) && lxc delete -f $(test_container_name) || true
 	@[ -f $(ROOT_DIR)/ssh_config ] && rm $(ROOT_DIR)/ssh_config || true
-	@[ -d $(ROOT_DIR)/.virtualenv ] && rm -rf $(ROOT_DIR)/.virtualenv || true
 
 # Virtualenv Builder
-venv: .virtualenv/bin/activate
-.virtualenv/bin/activate:
+venv: $(ROOT_DIR)/.virtualenv/bin/activate
+
+$(ROOT_DIR)/.virtualenv/bin/activate:
 	test -d .virtualenv || python3 -m venv .virtualenv
 	.virtualenv/bin/pip install -U pip setuptools
 	.virtualenv/bin/pip install -Ur test_requirements.txt
