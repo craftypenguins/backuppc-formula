@@ -2,15 +2,19 @@
 # vim: ft=sls
 
 {%- from "backuppc/map.jinja" import backuppc with context %}
+{% set xs_build_name = "BackupPC-XS-" ~ backuppc.lookup.xs_version -%}
+{% set xs_build_archive_name = xs_build_name + ".tar.gz" -%}
+{% set xs_build_package_url = backuppc.lookup.xs_url ~ "/" ~ backuppc.lookup.xs_version ~ "/" ~ xs_build_archive_name -%}
 
 build-essential:
   pkg.installed
 
-xs_build_checkout:
-  git.detached:
-    - name: {{ backuppc.lookup.xs_repo }}
-    - ref: {{ backuppc.lookup.xs_version }}
-    - target: /tmp/backuppc_xs
+xs_download:
+  archive.extracted:
+    - name: /tmp
+    - source: {{ xs_build_package_url }}
+    - source_hash: {{ backuppc.lookup.xs_hash }}
+    - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
 
 xs_build_perl:
   cmd.run:
@@ -18,15 +22,16 @@ xs_build_perl:
     - cwd: /tmp/backuppc_xs
     - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
     - require:
-        - git: xs_build_checkout
         - pkg: build-essential
+    - onchanges:
+        - archive: xs_download
 
 xs_build_make:
   cmd.run:
     - name: make
     - cwd: /tmp/backuppc_xs
     - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
-    - require:
+    - onchanges:
         - cmd: xs_build_perl
 
 xs_build_install:
@@ -34,8 +39,14 @@ xs_build_install:
     - name: make install
     - cwd: /tmp/backuppc_xs
     - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
-    - require:
+    - onchanges:
         - cmd: xs_build_make
 
+xs_build_cleanup:
+  file.absent:
+    - name: /tmp/{{ xs_build_name }}
+    - unless: test ! -d /tmp/{{ xs_build_name }}
+    - onchanges:
+        - cmd: xs_build_install
 
 
