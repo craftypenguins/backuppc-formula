@@ -19,7 +19,7 @@ xs_download:
 xs_build_perl:
   cmd.run:
     - name: perl Makefile.PL
-    - cwd: /tmp/backuppc_xs
+    - cwd: /tmp/{{ xs_build_name }}
     - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
     - require:
         - pkg: build-essential
@@ -29,7 +29,7 @@ xs_build_perl:
 xs_build_make:
   cmd.run:
     - name: make
-    - cwd: /tmp/backuppc_xs
+    - cwd: /tmp/{{ xs_build_name }}
     - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
     - onchanges:
         - cmd: xs_build_perl
@@ -37,7 +37,7 @@ xs_build_make:
 xs_build_install:
   cmd.run:
     - name: make install
-    - cwd: /tmp/backuppc_xs
+    - cwd: /tmp/{{ xs_build_name }}
     - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
     - onchanges:
         - cmd: xs_build_make
