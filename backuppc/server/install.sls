@@ -9,7 +9,7 @@
 
 backuppc-directory:
   file.directory:
-    - name: {{ backuppc.look.binary_directory }}
+    - name: {{ backuppc.lookup.binary_directory }}
     - makedirs: True
 
 backuppc-data-directory:
