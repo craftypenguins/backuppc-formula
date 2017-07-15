@@ -4,9 +4,9 @@
   command -v salt-call
 }
 
-@test "salt-call version is 2016.11.5" {
+@test "salt-call version is 2016.11.6" {
   run salt-call --version
-  [[ ${lines[0]} =~ "2016.11.5" ]]
+  [[ ${lines[0]} =~ "2016.11.6" ]]
 }
 
 @test "assert pillar renders" {
