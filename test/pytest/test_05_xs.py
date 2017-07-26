@@ -22,7 +22,7 @@ def test_salt_backuppc_xs_state(host):
 
     cleanup_state = "-xs_build_cleanup_"
 
-    # Note: You could run stat.sls_id to only run one ID from sls
+    # Note: You could run state.sls_id to only run one ID from sls
     result = host.salt("state.sls", "backuppc.xs.install")
 
     assert download_state in result

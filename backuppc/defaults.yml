@@ -4,6 +4,8 @@
 backuppc:
   lookup:
     version: 4.1.3
+    url: https://github.com/backuppc/backuppc/releases/download
+    hash: sha512=dafac2ac9c5544135c440510fe741eb2866d6b3c2cd8e593ab90ff7f907cdf2531e8e2eebbf42d23d4dd9747b002b1c821e89a287ca418581a0953c548fbdfd0
     xs_version: 0.56    # Note : We use the ~ operator in Jinja so that this 'float' comes as a string.  
     xs_url: https://github.com/backuppc/backuppc-xs/releases/download
     xs_hash: sha512=a501a2b11bc58d5ed93e887e3c11a78b794da5525ec9942c8ade59f3f814e26564e7826f6131631f4c9343acd7cc06fcff56d6c93f435eb49d949b1bef495649

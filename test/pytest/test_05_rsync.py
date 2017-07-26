@@ -22,7 +22,7 @@ def test_salt_backuppc_rsync_state(host):
 
     cleanup_state = "-rsync_build_cleanup_"
 
-    # Note: You could run stat.sls_id to only run one ID from sls
+    # Note: You could run state.sls_id to only run one ID from sls
     result = host.salt("state.sls", "backuppc.rsync-bpc.install")
 
     assert download_state in result
