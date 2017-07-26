@@ -1,4 +1,3 @@
-#backuppc:
-#  lookup:
-#    version: 1.2.3
-    
+backuppc:
+  lookup:
+    version: 4.1.3
