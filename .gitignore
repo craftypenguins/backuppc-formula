@@ -1,4 +1,9 @@
-.vagrant
+.virtualenv
 .DS_store
 *.swp
 *.lock
+.cache/
+.ropeproject/
+__pycache__/
+ssh_config
+

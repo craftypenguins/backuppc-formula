@@ -24,17 +24,17 @@ Available states
 
 Installs the backuppc server from release tarball
 
-``nginx.server.config``
+``backuppc.server.config``
 -------------------
 
 Manages the backuppc server configuration.
 
-``nginx.server.service``
+``backuppc.server.service``
 --------------------
 
 Manages the startup and running state of the backuppc.
 
-``nginx.server.client_config``
+``backuppc.server.client_config``
 --------------------------
 
 Manages client configurations on the server.  Should pull down mine data to setup backup.

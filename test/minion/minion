@@ -1,0 +1,19 @@
+file_client: local
+
+fileserver_backend:
+    - roots
+    - git
+
+file_roots:
+  base:
+    - /srv/saltstack/salt
+    - /srv/saltstack/formulas
+
+# Leverage Git Remotes if you want to inject dependant formulas
+#gitfs_remotes:
+#    - git://github.com/saltstack-formulas/postgres-formula.git
+
+pillar_roots:
+  base:
+    - /srv/saltstack/pillar
+
