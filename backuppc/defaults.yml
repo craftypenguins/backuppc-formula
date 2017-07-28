@@ -12,8 +12,11 @@ backuppc:
     rsync_version: 3.0.9.8
     rsync_url: https://github.com/backuppc/rsync-bpc/releases/download
     rsync_hash: sha512=c2022e46a1ab6212a0fb424621f1c0da601c68b8c3d8964f171654a1eaa0a24f95df85819c6605629dd5895552368eac0d9335c5bc74f12ea4d809381a900978
-    binary_directory: 
+    config_directory: /etc/backuppc
     data_directory: /var/lib/backuppc
+    binary_directory: /usr/local/backuppc
+    scgi_port: 8081
+
   server:
     enabled: true
   client:

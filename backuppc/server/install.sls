@@ -31,25 +31,42 @@ backuppc_download:
         - pkg: backuppc_file_listing_dep
         - pkg: backuppc_cgi_dep
 
+#backuppc-binary-directory:
+  #file.directory:
+    #- name: {{ backuppc.lookup.binary_directory }}
+    #- makedirs: True
+
+#backuppc-data-directory:
+  #file.directory:
+    #- name: {{ backuppc.lookup.data_directory }}
+    #- makedirs: True
+
+#backuppc-data-directory:
+  #file.directory:
+    #- name: {{ backuppc.lookup.data_directory }}
+    #- makedirs: True
+
 backuppc_configure:
   cmd.run:
-    - name: perl configure.pl
+    - name: >
+        perl configure.pl --batch --cgi-dir /srv/backuppc/cgi-bin
+        --config-dir /etc/backuppc --log-dir /var/log/backuppc
+        --data-dir /var/lib/backuppc --html-dir /srv/backuppc/image
+        --html-dir-url /BackupPC --install-dir /usr/local/backuppc
     - cwd: /tmp/{{ backuppc_name }}
-    - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
+    - unless: test -f /etc/backuppc/config.pl
     - require:
-        - pkg: build-essential
         - user: backuppc
     - onchanges:
         - archive: backuppc_download
 
-backuppc-directory:
-  file.directory:
-    - name: {{ backuppc.lookup.binary_directory }}
-    - makedirs: True
-
-backuppc-data-directory:
-  file.directory:
-    - name: {{ backuppc.lookup.data_directory }}
-    - makedirs: True
+backuppc-cgi-image-symlink:
+  file.symlink:
+    - name: /srv/backuppc/cgi-bin/image
+    - target: /srv/backuppc/image
+    - require:
+        - cmd: backuppc_configure
+    - onchanges:
+        - cmd: backuppc_configure
 
 
