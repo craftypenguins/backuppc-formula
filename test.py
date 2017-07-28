@@ -1,0 +1,24 @@
+# -*- coding: utf-8 -*-
+
+import subprocess
+import time
+
+import pytest
+import testinfra
+
+
+def test_passwd_file(host):
+    passwd = host.file("/etc/passwd")
+    assert passwd.contains("root")
+    assert passwd.user == "root"
+    assert passwd.group == "root"
+    assert passwd.mode == 0o644
+
+def test_pillars(host):
+    pillar = host.salt("pillar.items")
+    expected = {
+        'version': '1.2.3',
+    }
+    assert pillar == {
+        'backuppc': {'lookup': expected}
+    }
