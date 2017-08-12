@@ -106,7 +106,7 @@ test-lxc-run: test-lxc-run-infrastructure
 
 test-lxc-run-testinfra: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-testinfra: $(ROOT_DIR)/ssh_config
-	@.virtualenv/bin/pytest -s -vv --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
+	@.virtualenv/bin/pytest -s -v --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
 
 test-lxc-run-salt:
 	@ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'salt-call --local state.sls backuppc'
@@ -123,6 +123,7 @@ $(ROOT_DIR)/ssh_config:
 	@echo "  hostname $(container_ip)" >> $(ROOT_DIR)/ssh_config
 	@echo "  user root" >> $(ROOT_DIR)/ssh_config
 
+#todo - Add a test-verbose so that the pytests have -vv
 test: venv test-lxc-setup test-lxc-run $(ROOT_DIR)/ssh_config
 	@echo "Tests done"
 
