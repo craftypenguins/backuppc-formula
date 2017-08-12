@@ -22,6 +22,8 @@ rsync_build_configure:
     - cwd: /tmp/{{ rsync_bpc_name }}
     - onchanges:
         - archive: rsync_download
+    - require:
+        - pkg: build-essential
 
 rsync_build_make:
   cmd.run:
@@ -29,6 +31,8 @@ rsync_build_make:
     - cwd: /tmp/{{ rsync_bpc_name }}
     - onchanges:
         - cmd: rsync_build_configure
+    - require:
+        - pkg: build-essential
 
 rsync_build_install:
   cmd.run:
@@ -36,6 +40,8 @@ rsync_build_install:
     - cwd: /tmp/{{ rsync_bpc_name }}
     - onchanges:
         - cmd: rsync_build_make
+    - require:
+        - pkg: build-essential
 
 rsync_build_cleanup:
   file.absent:

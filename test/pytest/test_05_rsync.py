@@ -86,6 +86,7 @@ def test_salt_backuppc_rsync_configure_state(host):
 
     # These are the state result dictionary keys
     download_state = "archive_|-rsync_download_|-/tmp_|-extracted"
+    pkg_state = "pkg_|-build-essential_|-build-essential_|-installed"
     configure_state = "cmd_|-rsync_build_configure_|-./configure_|-run"
 
     # Note: You could run state.sls_id to only run one ID from sls
@@ -94,6 +95,9 @@ def test_salt_backuppc_rsync_configure_state(host):
 
     assert download_state in result, (
             "Configure State did not require/onchanges the Download State")
+
+    assert pkg_state in result, (
+            "Configure State did not require Build Essentials pkg")
 
     assert configure_state in result, (
             "Configure State not present in run")
@@ -129,6 +133,7 @@ def test_salt_backuppc_rsync_make_state(host):
     # These are the state result dictionary keys
     download_state = "archive_|-rsync_download_|-/tmp_|-extracted"
     configure_state = "cmd_|-rsync_build_configure_|-./configure_|-run"
+    pkg_state = "pkg_|-build-essential_|-build-essential_|-installed"
     make_state = "cmd_|-rsync_build_make_|-make_|-run"
 
     # Note: You could run state.sls_id to only run one ID from sls
@@ -140,6 +145,9 @@ def test_salt_backuppc_rsync_make_state(host):
 
     assert configure_state in result, (
             "Make State did not require/onchanes the Configure State")
+
+    assert pkg_state in result, (
+            "Make State did not require Build Essentials pkg")
 
     assert make_state in result, (
             "Make State not present in run")
@@ -175,6 +183,7 @@ def test_salt_backuppc_rsync_install_state(host):
     download_state = "archive_|-rsync_download_|-/tmp_|-extracted"
     configure_state = "cmd_|-rsync_build_configure_|-./configure_|-run"
     make_state = "cmd_|-rsync_build_make_|-make_|-run"
+    pkg_state = "pkg_|-build-essential_|-build-essential_|-installed"
     install_state = "cmd_|-rsync_build_install_|-make install_|-run"
 
     # Note: You could run state.sls_id to only run one ID from sls
@@ -189,6 +198,9 @@ def test_salt_backuppc_rsync_install_state(host):
 
     assert make_state in result, (
             "Install State did not require/onchanes the Make State")
+
+    assert pkg_state in result, (
+            "Install State did not require Build Essentials pkg")
 
     assert install_state in result
     assert result[install_state].get('result', False) is True

@@ -62,6 +62,10 @@ endif
 	@lxc exec preseed -- bash -c "mkdir -p /srv/saltstack/formulas"
 	@lxc exec preseed -- bash -c "mkdir -p /srv/saltstack/pillar"
 	@lxc exec preseed -- bash -c "mkdir -p /srv/saltstack/salt"
+	@echo "Turning off systemd automatic apt-get update runs by schedule - causes race conditions on salt runs"
+	@lxc exec preseed -- bash -c "systemctl disable apt-daily.service # disable run when system boot"
+	@lxc exec preseed -- bash -c "systemctl disable apt-daily.timer   # disable timer run"
+
 	@lxc stop preseed
 	@echo "Publishing image $(lxc_image_name)"
 	@lxc publish preseed --alias $(lxc_image_name) description=$(lxc_image_description)
@@ -102,7 +106,7 @@ test-lxc-run: test-lxc-run-infrastructure
 
 test-lxc-run-testinfra: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-testinfra: $(ROOT_DIR)/ssh_config
-	@.virtualenv/bin/pytest -s -v --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
+	@.virtualenv/bin/pytest -s -vv --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
 
 test-lxc-run-salt:
 	@ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'salt-call --local state.sls backuppc'
