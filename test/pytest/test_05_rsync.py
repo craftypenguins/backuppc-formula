@@ -144,7 +144,7 @@ def test_salt_backuppc_rsync_make_state(host):
             "Make State did not require Download State")
 
     assert configure_state in result, (
-            "Make State did not require/onchanes the Configure State")
+            "Make State did not require/onchagnes the Configure State")
 
     assert pkg_state in result, (
             "Make State did not require Build Essentials pkg")

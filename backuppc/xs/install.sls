@@ -14,7 +14,7 @@ xs_download:
     - name: /tmp
     - source: {{ xs_build_package_url }}
     - source_hash: {{ backuppc.lookup.xs_hash }}
-    - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
+    - unless: perl -MBackupPC::XS -e 1
 
 xs_build_perl:
   cmd.run:
@@ -30,7 +30,6 @@ xs_build_make:
   cmd.run:
     - name: make
     - cwd: /tmp/{{ xs_build_name }}
-    - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
     - onchanges:
         - cmd: xs_build_perl
 
@@ -38,7 +37,6 @@ xs_build_install:
   cmd.run:
     - name: make install
     - cwd: /tmp/{{ xs_build_name }}
-    - unless: test -f /usr/local/lib/x86_64-linux-gnu/perl/*/BackupPC/XS.pm
     - onchanges:
         - cmd: xs_build_make
 
