@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ft=sls
+include:
+  - backuppc.xs.install
 
 {%- from "backuppc/map.jinja" import backuppc with context %}
 
@@ -27,6 +29,7 @@ backuppc_download:
     - name: /tmp
     - source: {{ backuppc_package_url }}
     - source_hash: {{ backuppc.lookup.hash }}
+    - unless: test -f /etc/backuppc/config.pl
     - require:
         - pkg: backuppc_file_listing_dep
         - pkg: backuppc_cgi_dep
@@ -57,6 +60,7 @@ backuppc_configure:
     - unless: test -f /etc/backuppc/config.pl
     - require:
         - user: backuppc
+        - sls: backuppc.xs.install
     - onchanges:
         - archive: backuppc_download
 
