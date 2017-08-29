@@ -111,6 +111,7 @@ test-lxc-run-testinfra: $(ROOT_DIR)/ssh_config
 test-lxc-run-salt:
 	@ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'salt-call --local state.sls backuppc'
 
+test-lxc-run-infrastructure: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-infrastructure:
 	@echo "Running BATS $(INTEGRATION_TESTSUITE) tests"
 	@ssh -q -F $(ROOT_DIR)/ssh_config root@$(container_ip) -C 'bats /test/integration/$(INTEGRATION_TESTSUITE)/bats'
