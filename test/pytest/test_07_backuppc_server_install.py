@@ -20,7 +20,10 @@ def states(host):
         "xs_state": "cmd_|-xs_build_install_|-make install_|-run",
         "download_state": "archive_|-backuppc_download_|-/tmp_|-extracted",
         "configure_state": "-backuppc_configure_",  # Careful for regex
-        "user_state": "user_|-backuppc_user_|-backuppc_|-present"}
+        "user_state": "user_|-backuppc_user_|-backuppc_|-present",
+        "symlink_state": ("file_|-backuppc-cgi-image-symlink_|"
+                          "-/srv/backuppc/cgi-bin/image_|-symlink")
+    }
     return states
 
 
@@ -169,7 +172,7 @@ def test_salt_backuppc_configure_onchanges(host, states):
     assert "onchanges" in comment
 
 
-# Test the build state
+# Test the build configure state
 def test_salt_backuppc_configure_state(host, cleanout, states):
 
     download_state = states['download_state']
@@ -188,10 +191,6 @@ def test_salt_backuppc_configure_state(host, cleanout, states):
             "Configure State did not require the User State")
     assert xs_state in result, (
             "Configure State did not require the XS Library states")
-    # assert [result[key] for key in result.keys()
-            # if re.search(configure_state, key)][0], (
-                # "Configure State not present in run"
-            # )
     configure_state_results = [result[key] for key in result.keys()
                                if re.search(configure_state, key)][0]
     assert configure_state_results
@@ -204,6 +203,50 @@ def test_salt_backuppc_configure_state(host, cleanout, states):
     stdoutput = changes.get('stdout', False)
     assert "we are finished" in stdoutput, (
         "Makefile generation failed")
+
+
+# Test the build make state
+def test_salt_backuppc_symlink_state(host, cleanout, states):
+
+    download_state = states['download_state']
+    configure_state = states['configure_state']
+    user_state = states['user_state']
+    xs_state = states['xs_state']
+    symlink_state = states['symlink_state']
+
+    # These are the state result dictionary keys
+    # Note: You could run state.sls_id to only run one ID from sls
+    result = host.salt("state.sls_id", ["backuppc-cgi-image-symlink",
+                                        "backuppc.server.install"])
+
+    assert download_state in result, (
+            "Symlink State did not require/onchanges the Download State")
+    assert user_state in result, (
+            "Symlink State did not require the User State")
+    assert xs_state in result, (
+            "Symlink State did not require the XS Library states")
+    assert [result[key] for key in result.keys()
+            if re.search(configure_state, key)][0], (
+                "Symlink State did not require the Configure state"
+            )
+    assert symlink_state in result
+    assert result[symlink_state].get('result', False) is True
+
+
+# Test the symlink state no action
+def test_salt_backuppc_symlink_onchanges(host, states):
+
+    symlink_state = states['symlink_state']
+
+    # Note: You could run state.sls_id to only run one ID from sls
+    result = host.salt("state.sls_id", ["backuppc-cgi-image-symlink",
+                                        "backuppc.server.install"])
+
+    assert symlink_state in result
+    assert result[symlink_state].get('result', False) is True
+
+    comment = result[symlink_state].get('comment', False)
+    assert "none of the onchanges" in comment
 
 
 # def test_salt_backuppc_state(host):

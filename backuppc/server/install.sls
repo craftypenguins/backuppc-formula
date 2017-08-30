@@ -68,8 +68,6 @@ backuppc-cgi-image-symlink:
   file.symlink:
     - name: /srv/backuppc/cgi-bin/image
     - target: /srv/backuppc/image
-    - require:
-        - cmd: backuppc_configure
     - onchanges:
         - cmd: backuppc_configure
 

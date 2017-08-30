@@ -16,7 +16,8 @@ backuppc:
     data_directory: /var/lib/backuppc
     binary_directory: /usr/local/backuppc
     scgi_port: 8081
-
+    systemd_path: /lib/systemd/system
+    systemd_name: backuppc.service
   server:
     enabled: true
   client:
