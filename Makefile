@@ -25,17 +25,18 @@ all: build test package
 
 dist-clean:	clean
 	@lxc image list $(lxc_image_name) | grep -q $(lxc_image_name) && lxc image delete $(lxc_image_name) || true
+	@[ -d $(ROOT_DIR)/.virtualenv ] && rm -rf $(ROOT_DIR)/.virtualenv || true
 
 clean:	clean-test
 
 clean-test:
 	@lxc list $(test_container_name) | grep -q $(test_container_name) && lxc delete -f $(test_container_name) || true
 	@[ -f $(ROOT_DIR)/ssh_config ] && rm $(ROOT_DIR)/ssh_config || true
-	@[ -d $(ROOT_DIR)/.virtualenv ] && rm -rf $(ROOT_DIR)/.virtualenv || true
 
 # Virtualenv Builder
-venv: .virtualenv/bin/activate
-.virtualenv/bin/activate:
+venv: $(ROOT_DIR)/.virtualenv/bin/activate
+
+$(ROOT_DIR)/.virtualenv/bin/activate:
 	test -d .virtualenv || python3 -m venv .virtualenv
 	.virtualenv/bin/pip install -U pip setuptools
 	.virtualenv/bin/pip install -Ur test_requirements.txt
@@ -54,13 +55,17 @@ endif
 	@echo "Setting up BATS PPA"
 	@lxc exec preseed -- bash -c "add-apt-repository ppa:duggan/bats --yes"
 	@echo "Setting up Salt Repository"
-	@lxc exec preseed -- bash -c "wget -q -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -"
-	@lxc exec preseed -- bash -c "echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main' > /etc/apt/sources.list.d/saltstack.list"
+	@lxc exec preseed -- bash -c "wget -q -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/2016.11/SALTSTACK-GPG-KEY.pub | apt-key add -"
+	@lxc exec preseed -- bash -c "echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/2016.11 xenial main' > /etc/apt/sources.list.d/saltstack.list"
 	@echo "Updating System to latest and installing Salt Minion, BATS"
 	@lxc exec preseed -- bash -c "apt-get -qq update && apt-get -qq -y dist-upgrade && apt-get -qq install -y salt-minion bats"
 	@lxc exec preseed -- bash -c "mkdir -p /srv/saltstack/formulas"
 	@lxc exec preseed -- bash -c "mkdir -p /srv/saltstack/pillar"
 	@lxc exec preseed -- bash -c "mkdir -p /srv/saltstack/salt"
+	@echo "Turning off systemd automatic apt-get update runs by schedule - causes race conditions on salt runs"
+	@lxc exec preseed -- bash -c "systemctl disable apt-daily.service # disable run when system boot"
+	@lxc exec preseed -- bash -c "systemctl disable apt-daily.timer   # disable timer run"
+
 	@lxc stop preseed
 	@echo "Publishing image $(lxc_image_name)"
 	@lxc publish preseed --alias $(lxc_image_name) description=$(lxc_image_description)
@@ -101,11 +106,12 @@ test-lxc-run: test-lxc-run-infrastructure
 
 test-lxc-run-testinfra: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-testinfra: $(ROOT_DIR)/ssh_config
-	@.virtualenv/bin/pytest -v test.py --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo
+	@.virtualenv/bin/pytest -s -v --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
 
 test-lxc-run-salt:
 	@ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'salt-call --local state.sls backuppc'
 
+test-lxc-run-infrastructure: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-infrastructure:
 	@echo "Running BATS $(INTEGRATION_TESTSUITE) tests"
 	@ssh -q -F $(ROOT_DIR)/ssh_config root@$(container_ip) -C 'bats /test/integration/$(INTEGRATION_TESTSUITE)/bats'
@@ -118,6 +124,7 @@ $(ROOT_DIR)/ssh_config:
 	@echo "  hostname $(container_ip)" >> $(ROOT_DIR)/ssh_config
 	@echo "  user root" >> $(ROOT_DIR)/ssh_config
 
+#todo - Add a test-verbose so that the pytests have -vv
 test: venv test-lxc-setup test-lxc-run $(ROOT_DIR)/ssh_config
 	@echo "Tests done"
 

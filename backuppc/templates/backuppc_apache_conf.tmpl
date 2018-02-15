@@ -1,0 +1,31 @@
+#
+# DESCRIPTION
+#
+#   This file controls access and configuration for the BackupPC CGI
+#   interface.
+
+<Directory      /srv/backuppc/cgi-bin >
+#
+# This section tells apache which machines can access the interface.
+# You can change the allow line to allow access from your local
+# network, or comment out this region to allow access from all
+# machines.
+#
+order deny,allow
+deny from all
+allow from 127.0.0.1
+
+#
+# You can change the authorization method to LDAP or another method
+# besides htaccess here if you are so inclined.
+#
+AuthType Basic
+AuthUserFile /etc/backuppc/BackupPC.users
+AuthName "BackupPC Community Edition Administrative Interface"
+require valid-user
+
+</Directory>
+
+Alias           /BackupPC         /srv/backuppc/image
+ScriptAlias     /BackupPC_Admin         /srv/backuppc/cgi-bin/BackupPC_Admin
+
