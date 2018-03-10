@@ -1,0 +1,5 @@
+wheel
+paramiko==2.4.0
+pytest==3.4.2
+testinfra==1.11.1
+pytest-tap==2.2
