@@ -32,15 +32,16 @@ clean:	clean-test
 clean-test:
 	@lxc list $(test_container_name) | grep -q $(test_container_name) && lxc delete -f $(test_container_name) || true
 	@[ -f $(ROOT_DIR)/ssh_config ] && rm $(ROOT_DIR)/ssh_config || true
+	@[ -d $(ROOT_DIR)/_test ] && rm $(ROOT_DIR)/_test || true
 
 # Virtualenv Builder
 venv: $(ROOT_DIR)/.virtualenv/bin/activate
 
 $(ROOT_DIR)/.virtualenv/bin/activate:
-	test -d .virtualenv || python3 -m venv .virtualenv
-	.virtualenv/bin/pip install -U pip setuptools
-	.virtualenv/bin/pip install -Ur test_requirements.txt
-	touch .virtualenv/bin/activate
+	test -d $(ROOT_DIR)/.virtualenv || python3 -m venv $(ROOT_DIR)/.virtualenv
+	$(ROOT_DIR)/.virtualenv/bin/pip install -U pip setuptools
+	$(ROOT_DIR)/.virtualenv/bin/pip install -Ur $(ROOT_DIR)/test/requirements.txt
+	touch $(ROOT_DIR)/.virtualenv/bin/activate
 
 # LXC Image Builder
 image: 
@@ -106,7 +107,7 @@ test-lxc-run: test-lxc-run-infrastructure
 
 test-lxc-run-testinfra: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-testinfra: $(ROOT_DIR)/ssh_config
-	@.virtualenv/bin/pytest -s -v --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
+	@.virtualenv/bin/pytest --tap-stream --tap-files --tap-outdir=$(ROOT_DIR)/_test/ -s -v --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
 
 test-lxc-run-salt:
 	@ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'salt-call --local state.sls backuppc'

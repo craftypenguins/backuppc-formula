@@ -29,6 +29,14 @@ pipeline {
     stage('Unit Tests') {
       steps {
         sh "make test"
+        step([$class: "TapPublisher", testResults: "**/_test/*.tap"])
+      }
+    }
+
+    // Publish TAP results
+    stage('Publish Test Results') {
+      steps {
+        step([$class: "TapPublisher", testResults: "**/_test/*.tap"])
       }
     }
   }

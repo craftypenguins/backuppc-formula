@@ -6,4 +6,5 @@
 .ropeproject/
 __pycache__/
 ssh_config
+_test/
 
