@@ -32,7 +32,7 @@ clean:	clean-test
 clean-test:
 	@lxc list $(test_container_name) | grep -q $(test_container_name) && lxc delete -f $(test_container_name) || true
 	@[ -f $(ROOT_DIR)/ssh_config ] && rm $(ROOT_DIR)/ssh_config || true
-	@[ -d $(ROOT_DIR)/_test ] && rm $(ROOT_DIR)/_test || true
+	@[ -d $(ROOT_DIR)/_test ] && rm -rf $(ROOT_DIR)/_test || true
 
 # Virtualenv Builder
 venv: $(ROOT_DIR)/.virtualenv/bin/activate
