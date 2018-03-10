@@ -39,6 +39,13 @@ pipeline {
         step([$class: "TapPublisher", testResults: "**/_test/*.tap"])
       }
     }
+
+    // Clean up
+    stage('Clean up') {
+      steps {
+        sh "make clean"
+      }
+    }
   }
 }
 

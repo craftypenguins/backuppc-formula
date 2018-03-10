@@ -107,7 +107,7 @@ test-lxc-run: test-lxc-run-infrastructure
 
 test-lxc-run-testinfra: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-testinfra: $(ROOT_DIR)/ssh_config
-	@.virtualenv/bin/pytest --tap-stream --tap-files --tap-outdir=$(ROOT_DIR)/_test/ -s -v --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
+	@.virtualenv/bin/pytest --tap-files --tap-outdir=$(ROOT_DIR)/_test/ -s -v --ssh-config=$(ROOT_DIR)/ssh_config --hosts=saltsolo $(ROOT_DIR)/test/pytest
 
 test-lxc-run-salt:
 	@ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@$(container_ip) -C 'salt-call --local state.sls backuppc'
@@ -115,7 +115,7 @@ test-lxc-run-salt:
 test-lxc-run-infrastructure: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 test-lxc-run-infrastructure:
 	@echo "Running BATS $(INTEGRATION_TESTSUITE) tests"
-	@ssh -q -F $(ROOT_DIR)/ssh_config root@$(container_ip) -C 'bats /test/integration/$(INTEGRATION_TESTSUITE)/bats'
+	@ssh -q -F $(ROOT_DIR)/ssh_config root@$(container_ip) -C 'bats /test/integration/$(INTEGRATION_TESTSUITE)/bats' | tee $(ROOT_DIR)/_test/bats.tap
 
 $(ROOT_DIR)/ssh_config: container_ip=$(shell lxc list $(test_container_name) --format json | jq -r '.[] .state.network.eth0.addresses[0].address')
 $(ROOT_DIR)/ssh_config: 
